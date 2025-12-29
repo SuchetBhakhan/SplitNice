@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import styled, { css } from "styled-components";
 import { TbNotes } from "react-icons/tb";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import Modal from "../../ui/Modal";
+import ExpenseDetails from "./ExpenseDetails";
+import { StyledExpenseDesc } from "../../ui/StyledExpenseDesc";
 
 const StyledExpenseTransaction = styled.div`
   display: flex;
@@ -47,6 +50,7 @@ const StyledNotInvolved = styled.span`
 export default function ExpenseTransaction({ transaction }) {
   const queryClient = useQueryClient();
   const user = queryClient.getQueryData(["user"]);
+  const [showExpenseDetails, setShowExpenseDetails] = useState(false);
 
   const {
     month,
@@ -76,48 +80,59 @@ export default function ExpenseTransaction({ transaction }) {
     return acc;
   }, 0);
 
+  const getShowExpense = () => {
+    setShowExpenseDetails(!showExpenseDetails);
+  };
+
   return (
-    <StyledExpenseTransaction>
-      <StyledTransactionLeftContainer>
-        <StyledExpenseDate>
-          <span>{displayMon}</span>
-          <span>{day}</span>
-        </StyledExpenseDate>
-        <TbNotes size={44} />
-        <span>{expenseDescription}</span>
-      </StyledTransactionLeftContainer>
-      {isInvolved ? (
-        <StyledExpenseRightContainer>
+    <>
+      <StyledExpenseTransaction>
+        <StyledTransactionLeftContainer>
           <StyledExpenseDate>
-            {
-              <span>
-                {user.id === paidByUserId ? "you" : paidByUserName} paid
-              </span>
-            }
-            <span>
-              <FaIndianRupeeSign />
-              <span>{expenseAmount}</span>
-            </span>
+            <span>{displayMon}</span>
+            <span>{day}</span>
           </StyledExpenseDate>
-          <StyledExpenseDate>
-            {
+          <TbNotes size={44} />
+          <StyledExpenseDesc onClick={getShowExpense}>
+            {expenseDescription}
+          </StyledExpenseDesc>
+        </StyledTransactionLeftContainer>
+        {isInvolved ? (
+          <StyledExpenseRightContainer>
+            <StyledExpenseDate>
+              {
+                <span>
+                  {user.id === paidByUserId ? "you" : paidByUserName} paid
+                </span>
+              }
               <span>
-                {user.id === paidByUserId
-                  ? "you lent"
-                  : `${paidByUserName} lent you`}
+                <FaIndianRupeeSign />
+                <span>{expenseAmount}</span>
               </span>
-            }
-            <StyledExpenseAmt $sameUser={user.id === paidByUserId}>
-              <FaIndianRupeeSign />
-              <span>
-                {user.id === paidByUserId ? paidByUserShare : loggedInUserShare}
-              </span>
-            </StyledExpenseAmt>
-          </StyledExpenseDate>
-        </StyledExpenseRightContainer>
-      ) : (
-        <StyledNotInvolved>not involved</StyledNotInvolved>
-      )}
-    </StyledExpenseTransaction>
+            </StyledExpenseDate>
+            <StyledExpenseDate>
+              {
+                <span>
+                  {user.id === paidByUserId
+                    ? "you lent"
+                    : `${paidByUserName} lent you`}
+                </span>
+              }
+              <StyledExpenseAmt $sameUser={user.id === paidByUserId}>
+                <FaIndianRupeeSign />
+                <span>
+                  {user.id === paidByUserId
+                    ? paidByUserShare
+                    : loggedInUserShare}
+                </span>
+              </StyledExpenseAmt>
+            </StyledExpenseDate>
+          </StyledExpenseRightContainer>
+        ) : (
+          <StyledNotInvolved>not involved</StyledNotInvolved>
+        )}
+      </StyledExpenseTransaction>
+      {showExpenseDetails && <ExpenseDetails transaction={transaction} />}
+    </>
   );
 }
