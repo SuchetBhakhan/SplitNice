@@ -1,6 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import { StyledExpenseDesc } from "../../../ui/StyledExpenseDesc";
+import ExpenseDetails from "../ExpenseDetails";
 
 const StyledExpenseDate = styled.span`
   display: flex;
@@ -28,6 +30,11 @@ const StyledNotInvolved = styled.span`
 export default function SettleUpTransaction({ transaction }) {
   const queryClient = useQueryClient();
   const user = queryClient.getQueryData(["user"]);
+  const [showExpenseDetails, setShowExpenseDetails] = useState(false);
+
+  const getShowExpense = () => {
+    setShowExpenseDetails(!showExpenseDetails);
+  };
 
   const {
     month,
@@ -67,31 +74,35 @@ export default function SettleUpTransaction({ transaction }) {
       (pfu) => pfu.paidForUserId === user.id
     );
 
-    //console.log("logged");
     isInvolved = paidByUserId === user.id || loggedInUserInvolved;
   }
 
   prepareDisplayData();
 
   return (
-    <StyledSettleUp>
-      <LeftContainer>
-        <StyledExpenseDate>
-          <span>{displayMon}</span>
-          <span>{day}</span>
-        </StyledExpenseDate>
-        <span>{expenseDescription}</span>
-      </LeftContainer>
-      <div>
-        {isInvolved ? (
-          <>
-            <span>{expenseRelation}</span>
-            <span> ₹{expenseAmount}</span>
-          </>
-        ) : (
-          <StyledNotInvolved>not involved</StyledNotInvolved>
-        )}
-      </div>
-    </StyledSettleUp>
+    <>
+      <StyledSettleUp>
+        <LeftContainer>
+          <StyledExpenseDate>
+            <span>{displayMon}</span>
+            <span>{day}</span>
+          </StyledExpenseDate>
+          <StyledExpenseDesc onClick={getShowExpense}>
+            {expenseDescription}
+          </StyledExpenseDesc>
+        </LeftContainer>
+        <div>
+          {isInvolved ? (
+            <>
+              <span>{expenseRelation}</span>
+              <span> ₹{expenseAmount}</span>
+            </>
+          ) : (
+            <StyledNotInvolved>not involved</StyledNotInvolved>
+          )}
+        </div>
+      </StyledSettleUp>
+      {showExpenseDetails && <ExpenseDetails transaction={transaction} />}
+    </>
   );
 }
